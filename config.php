@@ -13,10 +13,19 @@ date_default_timezone_set('Asia/Seoul');
 
 // 세션 설정 (세션 시작 전에만 설정)
 if (session_status() === PHP_SESSION_NONE) {
+    // 세션 파일 저장 경로를 persistent volume인 data 폴더로 변경
+    $sessionPath = DATA_PATH . '/sessions';
+    if (!is_dir($sessionPath)) {
+        mkdir($sessionPath, 0755, true);
+    }
+    ini_set('session.save_path', $sessionPath);
+
     ini_set('session.cookie_httponly', 1);
     ini_set('session.use_strict_mode', 1);
-    ini_set('session.cookie_samesite', 'Strict');
-    ini_set('session.gc_maxlifetime', 3600);
+    // IP 접속 환경 호환성을 위해 Lax로 변경
+    ini_set('session.cookie_samesite', 'Lax');
+    ini_set('session.gc_maxlifetime', 86400); // 24시간
+    
     // HTTPS 환경에서만 Secure 쿠키 적용
     $isHttps = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
     if ($isHttps) {
