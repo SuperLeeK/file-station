@@ -11,6 +11,12 @@ ini_set('display_errors', 0);
 // 타임존
 date_default_timezone_set('Asia/Seoul');
 
+// 기본 설정
+define('APP_NAME', 'FileStation');
+define('APP_VERSION', '1.0.0');
+define('BASE_PATH', __DIR__);
+define('DATA_PATH', BASE_PATH . '/data');
+
 // 세션 설정 (세션 시작 전에만 설정)
 if (session_status() === PHP_SESSION_NONE) {
     // 세션 파일 저장 경로를 persistent volume인 data 폴더로 변경
@@ -77,12 +83,6 @@ function regenerateCsrfToken(): string {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     return $_SESSION['csrf_token'];
 }
-
-// 기본 설정
-define('APP_NAME', 'FileStation');
-define('APP_VERSION', '1.0.0');
-define('BASE_PATH', __DIR__);
-define('DATA_PATH', BASE_PATH . '/data');
 
 // 사용자 폴더 설정 (동적 로드)
 // home 타입 스토리지는 USER_FILES_ROOT/계정명 으로 자동 계산됨
@@ -207,9 +207,8 @@ if (!function_exists('str_ends_with')) {
 
 // 자동 로더
 spl_autoload_register(function ($class) {
-    $file = BASE_PATH . '/api/' . $class . '.php';
-    if (file_exists($file)) {
-        require_once $file;
+    if (file_exists(BASE_PATH . '/api/' . $class . '.php')) {
+        require_once BASE_PATH . '/api/' . $class . '.php';
     }
 });
 
