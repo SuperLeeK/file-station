@@ -4,9 +4,9 @@
  * 시놀로지 파일스테이션 대체용 웹 파일 관리자
  */
 
-// 에러 리포팅 (운영 시 0으로)
-error_reporting(0);
-ini_set('display_errors', 0);
+// 에러 리포팅 (디버깅용 - 배포 후 꺼야 함)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // 타임존
 date_default_timezone_set('Asia/Seoul');
