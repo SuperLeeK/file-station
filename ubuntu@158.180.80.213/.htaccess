@@ -1,0 +1,38 @@
+# FileStation .htaccess
+
+# PHP 설정 - 청크 업로드 기반이므로 청크 크기만 처리 가능하면 됨
+# 실제 파일 크기 제한 없음 (무제한)
+php_value upload_max_filesize 100M
+php_value post_max_size 100M
+php_value max_execution_time 0
+php_value max_input_time -1
+php_value memory_limit 256M
+
+# 보안 헤더
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# data 폴더 접근 차단 (site_images 이미지 파일 제외)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # site_images 폴더의 이미지 파일은 허용
+    RewriteRule ^data/site_images/.*\.(jpg|jpeg|png|gif|webp|svg|ico)$ - [L]
+    # 그 외 data 폴더는 차단
+    RewriteRule ^data/ - [F,L]
+    
+    # ★ 파일 저장소 직접 접근 차단 (중요!)
+    # users 폴더 (개인 파일) - 모든 접근 차단
+    RewriteRule ^users/ - [F,L]
+    # shared 폴더 (공유 파일) - 모든 접근 차단
+    RewriteRule ^shared/ - [F,L]
+    
+    # WebDAV Basic Auth 헤더 전달 (CGI/FastCGI 환경)
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+</IfModule>
+
+# 디렉토리 리스팅 비활성화
+Options -Indexes

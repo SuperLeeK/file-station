@@ -1,0 +1,15 @@
+[
+    {
+        "username": "ljzero",
+        "password": "$2y$12$HqEFjMOE7Od.9a4eB6YUtOoLU5eqDgTr.HZojQHXtxHZDKi5srkPO",
+        "display_name": "이지영",
+        "email": "ljzero5@gmail.com",
+        "role": "admin",
+        "status": "active",
+        "quota": 0,
+        "is_active": 1,
+        "created_at": "2026-01-22 15:34:09",
+        "last_login": "2026-01-22 15:34:19",
+        "id": 1
+    }
+]

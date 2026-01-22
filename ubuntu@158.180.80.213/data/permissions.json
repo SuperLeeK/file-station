@@ -1,0 +1,11 @@
+[
+    {
+        "storage_id": 1,
+        "user_id": 1,
+        "can_read": 1,
+        "can_write": 1,
+        "can_delete": 1,
+        "can_share": 1,
+        "id": 1
+    }
+]
