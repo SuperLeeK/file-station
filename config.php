@@ -17,8 +17,11 @@ if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.use_strict_mode', 1);
     ini_set('session.cookie_samesite', 'Strict');
     ini_set('session.gc_maxlifetime', 3600);
-    // HTTPS 환경에서는 아래 주석 해제
-    ini_set('session.cookie_secure', 1);
+    // HTTPS 환경에서만 Secure 쿠키 적용
+    $isHttps = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+    if ($isHttps) {
+        ini_set('session.cookie_secure', 1);
+    }
 }
 
 // ===== CSRF 토큰 관리 =====
