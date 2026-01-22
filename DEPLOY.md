@@ -4,17 +4,80 @@
 
 ## 1. 사전 준비
 
-### 포트 개방
-Oracle Cloud 보안 목록(Security List)에서 **8080** 포트(Ingress)를 허용해야 합니다.
+### 1. 프로젝트 업데이트 및 실행
+기존 서비스(Nginx)와 충돌을 피하기 위해 Caddy를 제거하고, **FileStation만 8080 포트**로 실행합니다.
 
-1. Oracle Cloud 콘솔 접속
-2. `Networking` -> `Virtual Cloud Networks` 선택
-3. 사용하는 VCN 클릭 -> `Security Lists` -> `Default Security List` 클릭
-4. `Add Ingress Rules` 클릭
-   - **Source CIDR**: `0.0.0.0/0`
-   - **Destination Port Range**: `8080`
-   - **Protocol**: TCP
-5. `Add Ingress Rules` 버튼 클릭
+```bash
+# 로컬에서 업데이트
+git add .
+git commit -m "Update: Remove Caddy for Nginx integration"
+git push
+```
+
+```bash
+# 서버에서 업데이트
+cd file-station
+git pull
+
+# 기존 컨테이너 종료 및 정리
+sudo docker-compose down --remove-orphans
+
+# FileStation만 실행 (8080 포트)
+sudo docker-compose up -d --build
+```
+
+---
+
+### 2. Nginx 리버스 프록시 설정 (서버 설정)
+이미 실행 중인 Nginx에 `/file-station` 경로를 추가하여 FileStation 컨테이너(8080)로 연결합니다.
+
+1.  **Nginx 설정 파일 열기** (서버마다 경로가 다를 수 있음, 보통 `/etc/nginx/sites-available/default` 또는 `/etc/nginx/nginx.conf`)
+    ```bash
+    sudo nano /etc/nginx/sites-available/default
+    ```
+
+2.  **server 블록(`server { ... }`) 안에 아래 내용을 추가**합니다. (443 SSL 블록 내부에 추가하는 것을 권장)
+
+    ```nginx
+    # FileStation 리버스 프록시 설정
+    location /file-station/ {
+        proxy_pass http://localhost:8080/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # 업로드 용량 제한 해제 (필요시)
+        client_max_body_size 0;
+    }
+    ```
+    > **주의:** `proxy_pass http://localhost:8080/;` 끝에 있는 **슬래시(/)**가 매우 중요합니다! (경로 재작성을 위해 필요)
+
+3.  **Nginx 설정 테스트 및 재시작**
+    ```bash
+    # 설정 문법 확인
+    sudo nginx -t
+    
+    # 문제 없으면 재시작
+    sudo systemctl reload nginx
+    ```
+
+---
+
+### 3. 접속 확인
+이제 설정하신 도메인의 하위 경로로 접속할 수 있습니다.
+
+*   **접속 주소**: `https://<도메인>/file-station/`
+*   (예: `https://example.com/file-station/`)
+
+---
+
+### 4. 문제 해결
+**Q: "404 Not Found" (CSS/JS 로딩 실패)**
+A: `location /file-station/` 설정에서 `proxy_pass` 끝에 슬래시(`/`)가 빠졌는지 확인하세요.
+
+**Q: "413 Request Entity Too Large" (업로드 실패)**
+A: Nginx 설정의 `client_max_body_size`를 늘려주어야 합니다. (위 설정 예시 참조)
 
 ---
 
@@ -81,8 +144,6 @@ docker-compose up -d --build
 ---
 
 ## 5. 접속 확인
-
-브라우저를 열고 `http://<서버_공인_IP>:8080` 으로 접속합니다.
 
 - **기본 계정**: `admin` / `admin`
 - **파일 저장 위치**: `filestation/data`, `filestation/users` 폴더에 파일이 저장됩니다.

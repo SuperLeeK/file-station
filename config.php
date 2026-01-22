@@ -26,8 +26,10 @@ if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.cookie_samesite', 'Lax');
     ini_set('session.gc_maxlifetime', 86400); // 24시간
     
-    // HTTPS 환경에서만 Secure 쿠키 적용
-    $isHttps = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+    // HTTPS 환경 확인 (리버스 프록시 지원)
+    $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
+               (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+               
     if ($isHttps) {
         ini_set('session.cookie_secure', 1);
     }
